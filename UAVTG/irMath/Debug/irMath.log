@@ -1,0 +1,10 @@
+﻿  SO3.cpp
+  SE3.cpp
+  NonlinearOptimization.cpp
+  Interpolation.cpp
+  Inertia.cpp
+  GCMMAOptimization.cpp
+  GaussianQuadrature.cpp
+  Function.cpp
+  코드를 생성하고 있습니다...
+  irMath.vcxproj -> C:\Users\Hong\Desktop\UAV code\UAVTG\Debug\irMath.lib
