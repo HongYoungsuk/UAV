@@ -11,7 +11,7 @@ namespace UAVDyn
 		Hexarotor::Hexarotor(const irLib::irMath::Real massb, const irLib::irMath::Real massr, const irLib::irMath::Real kv,
 			const irLib::irMath::Real kt, const irLib::irMath::Real r) : UAVModel(massb, massr, kv, kt, r)
 		{
-			_umin.resize(dof);
+			_umin.resize(_dof);
 
 		}
 	}

@@ -1,9 +1,0 @@
-﻿  Function.cpp
-  GaussianQuadrature.cpp
-  GCMMAOptimization.cpp
-  Inertia.cpp
-  Interpolation.cpp
-  NonlinearOptimization.cpp
-  SE3.cpp
-  SO3.cpp
-  irMath.vcxproj -> C:\Users\Hong\Desktop\UAV code\UAVTG\Release\irMath.lib

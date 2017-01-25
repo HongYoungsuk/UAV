@@ -30,6 +30,8 @@ namespace UAVDyn
 			irLib::irMath::Matrix6X _screw;	// rotor screw
 			irLib::irMath::Matrix6 _Gb;		// body inertia matrix w.r.t body frame
 			irLib::irMath::Matrix6 _GT;		// total inertia w.r.t body frame
+			irLib::irMath::MatrixX _n;		// axis direction
+
 
 			std::vector<irLib::irMath::Matrix4> _Tbi; // SE3 from body frame to each rotor frame
 			std::vector<irLib::irMath::Matrix4> _Tib; // SE3 from each rotor frame to body frame
@@ -47,7 +49,15 @@ namespace UAVDyn
 			~Hexarotor() {}
 
 		private:
-			const static int dof = 6;
+			const static int _dof = 6;
+			
+			SerialRobot _SE3;
+
+			irLib::irMath::SE3 _bodyT;
+			irLib::irMath::se3 _bodyV;
+			irLib::irMath::se3 _bodyVdot;
+			irLib::irMath::se3 _gravity;
+			irLib::irDyn::StatePtr _state;
 
 
 		public:
