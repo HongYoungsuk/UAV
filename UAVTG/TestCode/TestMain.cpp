@@ -1,18 +1,36 @@
 #include <iostream>
 #include <conio.h>
 #include <irMath\Constant.h>
+#include <irDyn\SerialOpenChain.h>
+#include <irRenderer\OSG_SimpleRender.h>
+
+#include <UAVTrajectory\SE3Parametrization.h>
+#include <UAVDyn\UAV.h>
 
 using namespace std;
 using namespace irLib::irMath;
+using namespace irLib::irDyn;
+using namespace irLib::irRenderer;
 
 int main()
-{
-	
-	Matrix4 a;
-	a.setZero();
-	cout << a << endl;
-	cout << "Test" << endl;
-	cout << "Test2" << endl;
+{	
+	UAVTG::UAVDyn::Hexarotor hexarotor;
+	UAVTG::UAVTrajectory::SE3Parametrization serialRobot;
+
+	// Inverse Dynamic of UAV test
+	StatePtr state = serialRobot.makeState();
+	VectorX q(6);
+	q << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+	state->setJointPos(q);
+	serialRobot.solveForwardKinematics(state);
+	SE3 T = state->getLinkSE3(6);
+	se3 V, Vdot;
+	V << 1, 1, 1, 1, 1, 1;
+	Vdot << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1;
+	VectorX input = hexarotor.solveUAVInverseDynamics(T, V, Vdot);
+	cout << input << endl;
+
+
 	/*
 	 Test code
 	*/
@@ -21,7 +39,7 @@ int main()
 	//for (unsigned int i = 0; i < dof + 1; i++)
 	//{
 	//	LinkPtr link_tmp = LinkPtr(new Link());
-	//	link_tmp->addDrawingGeomtryInfo(std::shared_ptr<Box>(new Box(0.3&, 0.3, 1.5)));
+	//	link_tmp->addDrawingGeomtryInfo(std::shared_ptr<Box>(new Box(0.3, 0.3, 1.5)));
 	//	robot.addLink(link_tmp);
 	//}
 

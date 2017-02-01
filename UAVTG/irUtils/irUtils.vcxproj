@@ -94,7 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\SNURobotics\include\</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

@@ -116,12 +116,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\irDyn\irDyn.vcxproj">
+      <Project>{aa1b0fa8-59f4-46cf-a207-951238792ec8}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\irMath\irMath.vcxproj">
       <Project>{cf4ad38d-eb41-4c5a-ab4a-5b9c070c93ad}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SerialRobot.h" />
     <ClInclude Include="UAV.h" />
   </ItemGroup>
   <ItemGroup>
