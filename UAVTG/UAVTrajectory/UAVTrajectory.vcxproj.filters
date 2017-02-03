@@ -21,12 +21,18 @@
     <ClInclude Include="SE3Parametrization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HexarotorPTPOptimization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PTPOptimization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SE3Parametrization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HexarotorPTPOptimization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -120,7 +120,7 @@ namespace irLib
 			irMath::se3 _V;
 			irMath::se3 _Vdot;
 
-		private:
+		public:
 			void setLinkSE3(const irMath::SE3& T) { _T = T; }
 			void setLinkVel(const irMath::se3& V) { _V = V; }
 			void setLinkAcc(const irMath::se3& Vdot) { _Vdot = Vdot; }
@@ -166,7 +166,7 @@ namespace irLib
 			irMath::SE3 _exp;
 			bool _expUpToDate;
 
-		private:
+		public:
 			void setJointF(const irMath::dse3& F) { _F = F; }
 
 			void setJointExp(const irMath::SE3& exp) { _exp = exp; }

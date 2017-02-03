@@ -118,12 +118,15 @@
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="Constant.h" />
+    <ClInclude Include="Diagnostic.h" />
+    <ClInclude Include="EulerIntegrator.h" />
     <ClInclude Include="Function.h" />
     <ClInclude Include="GaussianQuadrature.h" />
     <ClInclude Include="GCMMAOptimization.h" />
     <ClInclude Include="Inertia.h" />
     <ClInclude Include="Interpolation.h" />
     <ClInclude Include="LieGroup.h" />
+    <ClInclude Include="LinearIntegrator.h" />
     <ClInclude Include="NonlinearOptimization.h" />
     <ClInclude Include="SE3.h" />
     <ClInclude Include="SO3.h" />

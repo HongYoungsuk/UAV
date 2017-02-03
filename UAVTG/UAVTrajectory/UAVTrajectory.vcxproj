@@ -116,10 +116,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HexarotorPTPOptimization.h" />
     <ClInclude Include="PTPOptimization.h" />
     <ClInclude Include="SE3Parametrization.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HexarotorPTPOptimization.cpp" />
     <ClCompile Include="PTPOptimization.cpp" />
     <ClCompile Include="SE3Parametrization.cpp" />
   </ItemGroup>

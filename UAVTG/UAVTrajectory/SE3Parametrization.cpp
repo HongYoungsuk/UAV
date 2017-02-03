@@ -10,8 +10,9 @@ namespace UAVTG
 	{
 		SE3Parametrization::SE3Parametrization() : SerialOpenChain()
 		{
-			unsigned int DOF = 6;
-			for (unsigned int i = 0; i < DOF + 1; i++)
+			_ParamDof = 6;
+			//unsigned int DOF = 6;
+			for (unsigned int i = 0; i < _ParamDof + 1; i++)
 			{
 				addLink(irLib::irDyn::LinkPtr(new irLib::irDyn::Link()));
 			}
@@ -32,8 +33,74 @@ namespace UAVTG
 			}
 
 			irLib::irMath::se3 Vdot = irLib::irMath::se3::Zero();
-			Vdot(5) = 9.8;
+			//Vdot(5) = 9.8;
 			completeAssembling(irLib::irMath::SE3(), irLib::irMath::se3::Zero(), Vdot);
+			_state = makeState();
 		}
+
+		void SE3Parametrization::calculateT(ParamStatePtr & ParamState, UAVStatePtr & UAVState)
+		{
+			_state->setJointPos(ParamState->_q);
+			solveForwardKinematics(_state);
+			UAVState->_T = _state->getLinkSE3(_ParamDof);
+		}
+
+		void SE3Parametrization::calculateVelocityValues(ParamStatePtr & ParamState, UAVStatePtr & UAVState)
+		{
+			unsigned int dof = ParamState->_q.size();
+			unsigned int pN = ParamState->_dqdp.cols(); ///< number of parameters
+			_state->setJointPos(ParamState->_q);
+			_state->setJointVel(ParamState->_qdot);
+			_state->setJointAcc(ParamState->_qddot);
+			
+			for (unsigned int i = 0; i < dof; i++)
+			{
+				solveJointExponentialMapping(_state, i);
+			}
+
+			se3 V(_baseV), Vdot(_baseVdot);
+			_state->getLinkState(0).setLinkVel(V);
+			_state->getLinkState(0).setLinkAcc(Vdot);
+
+			UAVState->_Vp.setZero();
+			UAVState->_dVdp.setZero();
+			UAVState->_dVdotdp.setZero();
+
+			for (unsigned int i = 0; i < dof; i++)
+			{
+				LinkState& plink = _state->getLinkState(i + 1);
+				LinkState& clink = _state->getLinkState(i);
+				JointState& joint = _state->getJointState(i);
+
+				const se3& screw = _joints[i].getScrew();
+				
+				// calculate V, Vdot
+				V = SE3::InvAd(joint.getJointExp(), V) + screw * joint.getJointVel();
+				Vdot = SE3::InvAd(joint.getJointExp(), Vdot) + SE3::ad(plink.getLinkVel(), screw * joint.getJointVel())
+					+ screw * joint.getJointAcc();
+
+				plink.setLinkVel(V);
+				plink.setLinkAcc(Vdot);
+				
+				// calculate Vp
+				UAVState->_Vp = SE3::InvAd(joint.getJointExp()) * UAVState->_Vp + screw * ParamState->_dqdp.row(i);
+
+				// calculate dVdp
+				UAVState->_dVdp = SE3::InvAd(joint.getJointExp()) * UAVState->_dVdp + 
+					screw * ParamState->_dqdotdp.row(i) -
+					SE3::ad(screw, plink.getLinkVel()) * ParamState->_dqdp.row(i);
+
+				// calculate dVdotdp
+				UAVState->_dVdotdp = SE3::InvAd(joint.getJointExp()) * UAVState->_dVdotdp +
+					screw * ParamState->_dqddotdp.row(i) -
+					SE3::ad(screw, plink.getLinkVel()) * ParamState->_dqdotdp.row(i) -
+					SE3::ad(screw) * UAVState->_dVdp * joint.getJointVel() -
+					(SE3::ad(screw) * SE3::InvAd(joint.getJointExp(), clink.getLinkAcc())) * ParamState->_dqdp.row(i);				
+			}
+
+			UAVState->_V = V;
+			UAVState->_Vdot = Vdot;
+		}
+
 	}
 }

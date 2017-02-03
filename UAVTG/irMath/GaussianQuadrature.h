@@ -7,47 +7,30 @@
 
 #pragma once
 
-#include <vector>
-#include "Constant.h"
+#include "LinearIntegrator.h"
 
 namespace irLib
 {
 	namespace irMath
 	{
-
-		class GaussianQuadrature;
-
-		class GaussianQuadrature
+		class GaussianQuadrature : public LinearIntegrator
 		{
 		public:
-			const enum Schem { LG, LGR, LGL };
+			//const enum Schem { LG, LGR, LGL };
 
-		private:
+			GaussianQuadrature(int num_of_points = 0, Real initialTime = 0, Real finalTime = 1);
 
-			// grid number
-			unsigned int _N;
-			// initial time & final time
-			Real		_t0, _tf;
-			// sampling points from t0 to tf.
-			VectorX		_t;
+			virtual void	UpdateNumOfPoints(int num_of_points);
+			virtual void	UpdateTimeInterval(Real initialTime, Real finalTime);
+
+		protected:
+			void	UpdateWeights();
 			// sampling points in [-1, 1].
 			VectorX		_x;
-			// weight for integration.
-			VectorX		_w;
 
 		public:
 
-			GaussianQuadrature(unsigned int num_of_points = 0, Real initialTime = 0, Real finalTime = 1);
 
-			void	_calcCoeffs();
-
-			void	setNumOfPoints(unsigned int num_of_points);
-			void	setTimeInterval(Real initialTime, Real finalTime);
-
-			const VectorX&	getQueryPoints() const { return _t; }
-			const VectorX&	getWeights() const { return _w; }
-
-			const Real	evalIntegration(const VectorX& functionVal) const;
 		};
 	}
 }

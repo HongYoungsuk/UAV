@@ -1,19 +1,17 @@
 #include "GaussianQuadrature.h"
-
-#include <irUtils\Diagnostic.h>
+#include "Diagnostic.h"
 
 namespace irLib
 {
 	namespace irMath
 	{
-		GaussianQuadrature::GaussianQuadrature(unsigned int num_of_points, Real initialTime, Real finalTime)
-			: _N(num_of_points), _t0(initialTime), _tf(finalTime)
+		GaussianQuadrature::GaussianQuadrature(int num_of_points, Real initialTime, Real finalTime)
+			: LinearIntegrator(num_of_points, initialTime, finalTime)
 		{
-			setNumOfPoints(_N);
-			//setTimeInterval(initialTime, finalTime);
+			UpdateNumOfPoints(num_of_points);
 		}
 
-		void GaussianQuadrature::_calcCoeffs()
+		void GaussianQuadrature::UpdateWeights()
 		{
 			//
 			//	Press, W.H. (2007).Numerical recipes 3rd edition, pp.184 : The art of scientific computing.Cambridge university press.
@@ -30,7 +28,7 @@ namespace irLib
 				do {
 					p1 = 1.0;
 					p2 = 0.0;
-					for (unsigned int j = 0; j<_N; j++)
+					for (int j = 0; j < _N; j++)
 					{
 						//	Loop up the recurrence relation to get the
 						//	Legendre polynomial evaluated at z.
@@ -59,16 +57,16 @@ namespace irLib
 			}
 		}
 
-		void GaussianQuadrature::setNumOfPoints(unsigned int num_of_points)
+		void GaussianQuadrature::UpdateNumOfPoints(int num_of_points)
 		{
 			_N = num_of_points;
 			_t.resize(_N);
 			_x.resize(_N);
 			_w.resize(_N);
-			_calcCoeffs();
+			UpdateWeights();
 		}
 
-		void GaussianQuadrature::setTimeInterval(Real initialTime, Real finalTime)
+		void GaussianQuadrature::UpdateTimeInterval(Real initialTime, Real finalTime)
 		{
 			LOGIF(finalTime > initialTime, "final time must larger than initial time");
 
@@ -77,11 +75,6 @@ namespace irLib
 			_t0 = initialTime;
 			_tf = finalTime;
 			_t = (_tf - _t0) / 2 * _x + (_tf + _t0) / 2 * VectorX::Ones(_N);
-		}
-
-		const Real GaussianQuadrature::evalIntegration(const VectorX & functionVal) const
-		{
-			return  _w.dot(functionVal);
 		}
 	}
 }
