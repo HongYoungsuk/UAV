@@ -17,7 +17,8 @@ namespace UAVTG
 			UAVModel() {}
 			~UAVModel() {}
 			virtual irLib::irMath::VectorX& solveUAVInverseDynamics(irLib::irMath::SE3&, irLib::irMath::se3&, irLib::irMath::se3&) = 0;
-
+			virtual irLib::irMath::MatrixX solveUAVDiffInverseDynamics(irLib::irMath::SE3&, irLib::irMath::se3&, irLib::irMath::se3&, 
+				irLib::irMath::MatrixX&, irLib::irMath::MatrixX&, irLib::irMath::MatrixX&) = 0;
 		public:
 			unsigned int _dof;
 
@@ -56,7 +57,7 @@ namespace UAVTG
 			irLib::irMath::Matrix6X _C;		///< constant matrix related to thrust force w.r.t body frame
 			irLib::irMath::Matrix6X _Cinv;	///< constant inverse matrix of _C
 
-			irLib::irMath::VectorX _input;	///< UAV input vector
+			irLib::irMath::VectorX _tau;	///< UAV input vector
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
@@ -71,6 +72,13 @@ namespace UAVTG
 			 Given T(SE3), V, and Vdot, solve motor input values
 			*/
 			virtual irLib::irMath::VectorX& solveUAVInverseDynamics(irLib::irMath::SE3&, irLib::irMath::se3&, irLib::irMath::se3&);
+
+			/*
+				Differential inverse dynamic of UAV
+				Given T(SE3), V, Vdot, dVdp, dVdotdp, and Vp, solve gradient of motor input values w.r.t parameters
+			*/
+			virtual irLib::irMath::MatrixX solveUAVDiffInverseDynamics(irLib::irMath::SE3&, irLib::irMath::se3&, irLib::irMath::se3&,
+				irLib::irMath::MatrixX&, irLib::irMath::MatrixX&, irLib::irMath::MatrixX&);
 		public:
 			
 		};

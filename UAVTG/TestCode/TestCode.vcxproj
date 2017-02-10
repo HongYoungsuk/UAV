@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="TestMain.cpp" />
+    <ClCompile Include="HexarotorTestMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\irDyn\irDyn.vcxproj">

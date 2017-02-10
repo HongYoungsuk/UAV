@@ -58,6 +58,16 @@ namespace UAVTG
 				solveJointExponentialMapping(_state, i);
 			}
 
+			SE3 T(_baseT);
+			_state->getLinkState(0).setLinkSE3(T * _links[0].getM());
+			for (unsigned int i = 0; i < dof; i++)
+			{
+				LinkState& link = _state->getLinkState(i + 1);
+				T *= _state->getJointState(i).getJointExp();
+				link.setLinkSE3(T * _links[i + 1].getM());
+			}
+			UAVState->_T = _state->getLinkSE3(_ParamDof);
+
 			se3 V(_baseV), Vdot(_baseVdot);
 			_state->getLinkState(0).setLinkVel(V);
 			_state->getLinkState(0).setLinkAcc(Vdot);

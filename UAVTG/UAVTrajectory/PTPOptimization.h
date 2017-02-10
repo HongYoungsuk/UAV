@@ -15,15 +15,10 @@ namespace UAVTG
 	{
 		class PTPOptimization;
 		class SharedResource;
-		
-		class TorqueObjective;
-		class InputConstraint;
 
 		class PTPOptimization
 		{
 			friend class SharedResource;
-			friend class TorqueObjective;
-			friend class InputConstraint;
 		public:
 			PTPOptimization(UAVTG::UAVDyn::UAVModel* UAV, const unsigned int orderOfBSpline = 5, const unsigned int numOfOptCP = 5, const unsigned int numOfSamples = 30);
 			~PTPOptimization();
@@ -58,19 +53,22 @@ namespace UAVTG
 			/*!
 				Make objective function
 			*/
-				void makeObjectiveFunction();
+			virtual void makeObjectiveFunction() = 0;
 
 			/*!
 				Make Inequality constraint functions
 			*/
-			void makeIneqConstraintFunction();
+			virtual void makeIneqConstraintFunction() = 0;
+
+			/*!
+				Creat shared resource
+			*/
+			virtual SharedResource* CreateSharedResource() = 0;
 
 			/*!
 				Generate joint trajectory through optimization process
 			*/
 			virtual void generateTrajectory();
-
-
 		public:
 			/*
 				Nonlinear optimizer
@@ -97,8 +95,6 @@ namespace UAVTG
 			*/
 			irLib::irMath::FunctionPtr _objectiveFunc;
 			irLib::irMath::FunctionPtr _IneqFunc;
-			irLib::irMath::FunctionPtr _linearIneqFunc;
-			irLib::irMath::FunctionPtr _nonlinearIneqFunc;
 			
 			/*!
 				traveling time
@@ -147,8 +143,22 @@ namespace UAVTG
 			SharedResource(PTPOptimization* PTPOptimzer);
 			~SharedResource(){}
 
+			virtual void makeBSpline(const irLib::irMath::VectorX& params);
+			virtual void update(const irLib::irMath::VectorX& params) = 0;
+			const std::vector<irLib::irMath::VectorX>& gettau(const irLib::irMath::VectorX& params);
+			const std::vector<irLib::irMath::MatrixX>& getdtaudp(const irLib::irMath::VectorX& params);
 		public:
 			PTPOptimization* _PTPOptimizer;
+
+			/*!
+				Optimized parameters (vectorialized b-spline control points)
+			*/
+			irLib::irMath::VectorX _params;
+
+			/*!
+				B-spline control points
+			*/
+			irLib::irMath::MatrixX _cp;
 
 			/*!
 				States(SE3, generalized velocity ...) of UAV
@@ -159,6 +169,11 @@ namespace UAVTG
 				Serial open chain state(joint pos, vel, acc ..)
 			*/
 			std::vector<UAVTG::UAVTrajectory::ParamStatePtr> _ParamState;
+
+			/*!
+				UAV motor torque
+			*/
+			std::vector<irLib::irMath::VectorX> _tau;
 			
 			/*!
 				Bspline
@@ -170,31 +185,24 @@ namespace UAVTG
 			/*!
 				Other variables
 			*/
-			irLib::irMath::MatrixX _dPdP;
-			irLib::irMath::MatrixX _dQdP;
-			irLib::irMath::MatrixX _dRdP;
-			std::vector<irLib::irMath::VectorX> _P;
-			std::vector<irLib::irMath::VectorX> _Q;
-			std::vector<irLib::irMath::VectorX> _R;
+			std::vector<irLib::irMath::MatrixX> _dtaudp;
+			std::vector<irLib::irMath::MatrixX> _dqdp;
+			std::vector<irLib::irMath::MatrixX> _dqdotdp;
+			std::vector<irLib::irMath::MatrixX> _dqddotdp;
+
+			// 필요 없을 거 같은데..
+			//irLib::irMath::MatrixX _dPdP;
+			//irLib::irMath::MatrixX _dQdP;
+			//irLib::irMath::MatrixX _dRdP;
+			//std::vector<irLib::irMath::VectorX> _P;
+			//std::vector<irLib::irMath::VectorX> _Q;
+			//std::vector<irLib::irMath::VectorX> _R;
+
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
 	}
 
-	class TorqueObjective : public irLib::irMath::Function
-	{
-	public:
-		TorqueObjective(PTPOptimization* PTPOptimizer) : _PTPOptimizer(PTPOptimizer) {}
-		irLib::irMath::VectorX func(const irLib::irMath::VectorX& params) const;
-		irLib::irMath::MatrixX Jacobian(const irLib::irMath::VectorX& params) const;
-		PTPOptimization * _PTPOptimizer;
-	};
-
-	class InputConstraint : public irLib::irMath::Function
-	{
-	public:
-		InputConstraint(PTPOptimization* PTPOptimizer) : _PTPOptimizer(PTPOptimizer) {}
-		irLib::irMath::VectorX func(const irLib::irMath::VectorX& params) const;
-		irLib::irMath::MatrixX Jacobian(const irLib::irMath::VectorX& params) const;
-		PTPOptimization * _PTPOptimizer;
-	};
+	
 
 }

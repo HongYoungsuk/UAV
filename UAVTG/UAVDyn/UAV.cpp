@@ -39,6 +39,8 @@ namespace UAVTG
 			_C.resize(6, _dof);
 			_Cinv.resize(6, _dof);
 
+			_tau.resize(_dof);
+
 			// Set gravity
 			_gravity.setZero();
 			_gravity(5, 0) = -9.81;
@@ -112,8 +114,19 @@ namespace UAVTG
 		irLib::irMath::VectorX & Hexarotor::solveUAVInverseDynamics(irLib::irMath::SE3 & T, irLib::irMath::se3 & V, irLib::irMath::se3 & Vdot)
 		{
 			SE3 Tinv = T.inverse();
-			_input = _Cinv * (_GT * Vdot - SE3::ad(V).transpose() * _GT * V - SE3::Ad(Tinv) * _gravity * _massb);
-			return _input;
+			_tau = _Cinv * (_GT * Vdot - SE3::ad(V).transpose() * _GT * V - SE3::Ad(Tinv) * _gravity * _massb);
+			return _tau;
+		}
+		irLib::irMath::MatrixX Hexarotor::solveUAVDiffInverseDynamics(irLib::irMath::SE3 & T, irLib::irMath::se3 & V, irLib::irMath::se3 & Vdot, 
+			irLib::irMath::MatrixX & dVdp, irLib::irMath::MatrixX & dVdotdp, irLib::irMath::MatrixX & Vp)
+		{
+			MatrixX dtaudp;
+			unsigned int pN = dVdp.cols();
+			dtaudp.resize(_dof, pN);
+
+			//dtaudp = _Cinv * (_GT * dVdotdp -  );
+
+			return dtaudp;
 		}
 	}
 }
