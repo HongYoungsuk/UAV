@@ -260,5 +260,121 @@ namespace irLib
 			}
 			_viewer.frame();
 		}
+
+		/*
+			UAV_SimpleRenderer class
+			made by Youngsuk Hong(crazyhys@gmail.com)
+		*/
+		UAV_SimpleRender::UAV_SimpleRender(UAVTG::UAVTrajectory::PTPOptimization* optimizer, int width, int height)
+		{
+			_rootNode = new osg::Group;
+			_cameraManipulator = new osgGA::TerrainManipulator();
+			_geometryNode = new osg::Geode();;
+
+			_rootNode->addChild(OSG_simpleRender::createGround(5.0f));
+			_rootNode->addChild(_geometryNode);
+
+			//createAxis();
+			createInitialFinalPoints(optimizer);
+			createLines(optimizer);
+			createSphereObstacles(optimizer);
+
+			_viewer.setUpViewInWindow(40, 40, width, height);
+			_viewer.setSceneData(_rootNode);
+			_viewer.getCamera()->setClearColor(osg::Vec4(90 / 255.0, 102 / 255.0, 117 / 255.0, 1.0f));
+			//_viewer.getCamera()->setClearColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+			_viewer.setCameraManipulator(_cameraManipulator.get(), true);
+			//_cameraManipulator->setDistance(5.0f);
+			//_cameraManipulator->setRotation(osg::Quat(1, osg::Vec3d(1, 0, 0)));
+			_cameraManipulator->setDistance(25.0f);
+			_cameraManipulator->setRotation(osg::Quat(1, osg::Vec3d(1, 0.5, 0.5)));
+
+			_viewer.addEventHandler(new osgViewer::WindowSizeHandler);			
+		}
+
+		void UAV_SimpleRender::addLine(const std::vector<osg::Vec3>& linePoints, const osg::Vec4& color, const float width)
+		{
+			std::shared_ptr<Line> line = std::shared_ptr<Line>(new Line);
+			for (unsigned int i = 0; i < linePoints.size(); i++)
+				line->push_back(linePoints[i]);
+			line->setWidth(width);
+			line->setColor(color[0], color[1], color[2], color[3]);
+			_geometryNode->addDrawable(line->getGeometry());
+		}
+
+		void UAV_SimpleRender::addPoint(const osg::Vec3 & center, const float size, const osg::Vec4 & color)
+		{
+			std::shared_ptr<Points> point = std::shared_ptr<Points>(new Points);
+			point->push_back(center);
+			point->setSize(size);
+			point->setColor(color[0], color[1], color[2], color[3]);
+			_geometryNode->addDrawable(point->getGeometry());
+		}
+
+		void UAV_SimpleRender::addSphere(const osg::Vec3 & center, const float radius, const osg::Vec4 & color)
+		{
+			osg::Sphere* unitSphere = new osg::Sphere(center, radius);
+			osg::ShapeDrawable* unitSphereDrawable = new osg::ShapeDrawable(unitSphere);
+			unitSphereDrawable->setColor(color);
+			_geometryNode->addDrawable(unitSphereDrawable);
+		}
+		void UAV_SimpleRender::createAxis()
+		{
+			std::vector<osg::Vec3> x_axis, y_axis, z_axis;
+			x_axis.push_back(osg::Vec3(0.0, 0.0, 0.0));
+			x_axis.push_back(osg::Vec3(0.5f, 0.0, 0.0));
+
+			y_axis.push_back(osg::Vec3(0.0, 0.0, 0.0));
+			y_axis.push_back(osg::Vec3(0.0, 0.5f, 0.0));
+
+			z_axis.push_back(osg::Vec3(0.0, 0.0, 0.0));
+			z_axis.push_back(osg::Vec3(0.0, 0.0, 0.5f));
+
+			addLine(x_axis, osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f), 3);
+			addLine(y_axis, osg::Vec4(0.0f, 1.0f, 0.0f, 1.0f), 3);
+			addLine(z_axis, osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f), 3);
+		}
+
+		void UAV_SimpleRender::createInitialFinalPoints(UAVTG::UAVTrajectory::PTPOptimization* optimizer)
+		{
+			//addPoint(optimizer->_initialState.col(0), )
+			osg::Vec3 initialPoint, finalPoint;
+			for (unsigned int i = 0; i < 3; i++)
+			{
+				initialPoint[i] = optimizer->_initialState.col(0)(i);
+				finalPoint[i] = optimizer->_finalState.col(0)(i);
+				//std::cout << finalPoint[i] << std::endl;
+			}
+			
+			addPoint(initialPoint, 10, osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			addPoint(finalPoint, 10, osg::Vec4(0.0f, 1.0f, 0.0f, 1.0f));
+		}
+
+		void UAV_SimpleRender::createLines(UAVTG::UAVTrajectory::PTPOptimization* optimizer)
+		{
+			std::vector<osg::Vec3> initialLine, finalLine;
+			for (unsigned int i = 0; i < optimizer->_initialTrajectory.size(); i++)
+			{
+				initialLine.push_back(osg::Vec3(optimizer->_initialTrajectory[i](0), optimizer->_initialTrajectory[i](1), optimizer->_initialTrajectory[i](2)));
+				finalLine.push_back(osg::Vec3(optimizer->_finalTrajectory[i](0), optimizer->_finalTrajectory[i](1), optimizer->_finalTrajectory[i](2)));
+			}
+			addLine(initialLine, osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			addLine(finalLine, osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		}
+
+		void UAV_SimpleRender::createSphereObstacles(UAVTG::UAVTrajectory::PTPOptimization* optimizer)
+		{
+			for (unsigned int i = 0; i < optimizer->_SphereObstacleConFunc.size(); i++)
+			{
+				osg::Vec3 center;
+				float radius;
+				center[0] = std::static_pointer_cast<UAVTG::UAVTrajectory::SphereObstacleConstraint>(optimizer->_SphereObstacleConFunc[i])->_center(0);
+				center[1] = std::static_pointer_cast<UAVTG::UAVTrajectory::SphereObstacleConstraint>(optimizer->_SphereObstacleConFunc[i])->_center(1);
+				center[2] = std::static_pointer_cast<UAVTG::UAVTrajectory::SphereObstacleConstraint>(optimizer->_SphereObstacleConFunc[i])->_center(2);
+				radius = std::static_pointer_cast<UAVTG::UAVTrajectory::SphereObstacleConstraint>(optimizer->_SphereObstacleConFunc[i])->_radius;
+
+				addSphere(center, radius);
+			}
+		}
 	}
 }

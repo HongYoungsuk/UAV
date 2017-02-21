@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
+
+#include <irUtils/Conversion.h>
 #include <irMath/Common.h>
 #include <irMath/LieGroup.h>
 #include <irDyn/SerialOpenChain.h>
+#include <UAVTrajectory/PTPOptimization.h>
 
 #include <osg/io_utils>
 #include <osg/ShapeDrawable>
@@ -14,6 +18,7 @@
 #include <osgDB/ReadFile>
 #include <osg/LineWidth>
 #include <osg/Material>
+#include <osg/Shape>
 
 #include "OSG_NodeVisitor.h"
 #include "OSG_Primitives.h"
@@ -52,7 +57,7 @@ namespace irLib
 			void add(const ExtFile& file) { _rootNode->addChild(file.getRoot()); }
 			void remove(const ExtFile& file) { _rootNode->removeChild(file.getRoot()); }
 
-		protected:
+		public:
 			static const unsigned int numTiles = 25;
 			static osg::ref_ptr< osg::Node > createGround(const float& size = (1.0f));
 
@@ -62,6 +67,29 @@ namespace irLib
 			osgUtil::Optimizer							_optimzer;
 			osg::ref_ptr<osg::Geode>					_geometryNode;
 			std::vector< NodeStatePair >				_NodeStateList;
+		};
+
+		class UAV_SimpleRender
+		{
+		public:
+			UAV_SimpleRender(UAVTG::UAVTrajectory::PTPOptimization* optimizer, int width = 600, int height = 600);
+			osgViewer::Viewer&	getViewer() { return _viewer; }
+
+			void addGeometry(const Primitives& geom) { _geometryNode->addDrawable(geom.getGeometry()); }
+			void removeGeometry(const Primitives& geom) { _geometryNode->removeDrawable(geom.getGeometry()); }
+			void addLine(const std::vector<osg::Vec3>& linePoints, const osg::Vec4& color = osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f), const float width = (3.0f));
+			void addPoint(const osg::Vec3& center, const float size, const osg::Vec4& color = osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			void addSphere(const osg::Vec3& center, const float radius, const osg::Vec4& color = osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		private:
+			void createAxis();
+			void createInitialFinalPoints(UAVTG::UAVTrajectory::PTPOptimization* optimizer);
+			void createLines(UAVTG::UAVTrajectory::PTPOptimization* optimizer);
+			void createSphereObstacles(UAVTG::UAVTrajectory::PTPOptimization* optimizer);
+
+			osg::ref_ptr< osg::Group >					_rootNode;
+			osg::ref_ptr< osg::Geode >					_geometryNode;
+			osg::ref_ptr< osgGA::TerrainManipulator >	_cameraManipulator;
+			osgViewer::Viewer							_viewer;		
 		};
 	}
 }

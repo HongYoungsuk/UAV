@@ -9,13 +9,13 @@ namespace UAVTG
 		class HexarotorPTPOptimization;
 		class HexarotorSharedResource;
 
-		class HexarotorTorqueObjective;
+		class HexarotorInputObjective;
 		class HexarotorInputConstraint;
 
 		class HexarotorPTPOptimization : public PTPOptimization
 		{
 			friend class HexarotorSharedResource;
-			friend class HexarotorTorqueObjective;
+			friend class HexarotorInputObjective;
 			friend class HexarotorInputConstraint;
 		public:
 			HexarotorPTPOptimization(UAVTG::UAVDyn::Hexarotor* UAV, const unsigned int orderOfBSpline = 5, const unsigned int numOfOptCP = 5, const unsigned int numOfSamples = 30)
@@ -37,10 +37,10 @@ namespace UAVTG
 			virtual void update(const irLib::irMath::VectorX& params);
 		};
 
-		class HexarotorTorqueObjective : public irLib::irMath::Function
+		class HexarotorInputObjective : public irLib::irMath::Function
 		{
 		public:
-			HexarotorTorqueObjective(HexarotorPTPOptimization* optimizer) : _optimizer(optimizer) {}
+			HexarotorInputObjective(HexarotorPTPOptimization* optimizer) : _optimizer(optimizer) {}
 			irLib::irMath::VectorX func(const irLib::irMath::VectorX& params) const;
 			irLib::irMath::MatrixX Jacobian(const irLib::irMath::VectorX& params) const;
 			HexarotorPTPOptimization* _optimizer;

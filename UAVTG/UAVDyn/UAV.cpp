@@ -117,15 +117,15 @@ namespace UAVTG
 			_tau = _Cinv * (_GT * Vdot - SE3::ad(V).transpose() * _GT * V - SE3::Ad(Tinv) * _gravity * _massb);
 			return _tau;
 		}
+
 		irLib::irMath::MatrixX Hexarotor::solveUAVDiffInverseDynamics(irLib::irMath::SE3 & T, irLib::irMath::se3 & V, irLib::irMath::se3 & Vdot, 
 			irLib::irMath::MatrixX & dVdp, irLib::irMath::MatrixX & dVdotdp, irLib::irMath::MatrixX & Vp)
 		{
 			MatrixX dtaudp;
 			unsigned int pN = dVdp.cols();
 			dtaudp.resize(_dof, pN);
-
-			//dtaudp = _Cinv * (_GT * dVdotdp -  );
-
+			dtaudp = _Cinv * (_GT * dVdotdp -  SE3::ado(_GT * V) * dVdp - SE3::adTranspose(V) * _GT * dVdp
+				- SE3::ad(SE3::InvAd(T) * _gravity * _massb) * Vp);
 			return dtaudp;
 		}
 	}

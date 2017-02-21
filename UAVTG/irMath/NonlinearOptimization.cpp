@@ -89,7 +89,7 @@ namespace irLib
 			Real startTime = clock();
 
 			//optimizer.set_maxtime(1.5); // 원래는 없었음
-			optimizer.set_maxtime(10);
+			//optimizer.set_maxtime(10);
 			optimizer.set_maxeval(500);
 			optimizer.set_xtol_rel(1e-4);
 			optimizer.set_ftol_rel(1e-4);
@@ -127,7 +127,7 @@ namespace irLib
 			//{
 			//	resultX(i) = x[i];
 			//}
-			/////////////////////////////
+			///////////////////////////
 
 			VectorX minX = initialX;
 			Real min = RealMax;
@@ -173,7 +173,7 @@ namespace irLib
 				min = RealMax;
 			}
 
-			//cout << "[OPTIMIZATION] Computation Time : " << clock() - startTime << "ms" << endl;
+			cout << "[OPTIMIZATION] Computation Time : " << clock() - startTime << "ms" << endl;
 
 			/////////////////////////////// 만약에 정답이 없는 경우 처리 ///////////////////////////////
 			resultX = minX;

@@ -490,5 +490,72 @@ namespace irLib
 			result(5) = S1(1)*S2(3) - S1(0)*S2(4);
 			return result;
 		}
+
+		Matrix6 SE3::ado(const se3 & S)
+		{
+			Matrix6 result;
+
+			result(0, 0) = 0;
+			result(0, 1) = -S(2);
+			result(0, 2) = S(1);
+
+			result(0, 3) = 0;
+			result(0, 4) = -S(5);
+			result(0, 5) = S(4);
+
+			result(1, 0) = S(2);
+			result(1, 1) = 0;
+			result(1, 2) = -S(0);
+
+			result(1, 3) = S(5);
+			result(1, 4) = 0;
+			result(1, 5) = -S(3);
+
+			result(2, 0) = -S(1);
+			result(2, 1) = S(0);
+			result(2, 2) = 0;
+
+			result(2, 3) = -S(4);
+			result(2, 4) = S(3);
+			result(2, 5) = 0;
+
+			result(3, 0) = 0;
+			result(3, 1) = -S(5);
+			result(3, 2) = S(4);
+
+			result(3, 3) = 0;
+			result(3, 4) = 0;
+			result(3, 5) = 0;
+
+			result(4, 0) = S(5);
+			result(4, 1) = 0;
+			result(4, 2) = -S(3);
+
+			result(4, 3) = 0;
+			result(4, 4) = 0;
+			result(4, 5) = 0;
+
+			result(5, 0) = -S(4);
+			result(5, 1) = S(3);
+			result(5, 2) = 0;
+
+			result(5, 3) = 0;
+			result(5, 4) = 0;
+			result(5, 5) = 0;
+
+			return result;
+		}
+
+		se3 SE3::ado(const se3 & S1, const se3 & S2)
+		{
+			se3 result;
+			result(0) = -S1(2)*S2(1) + S1(1)*S2(2) - S1(5)*S2(4) + S1(4)*S2(5);
+			result(1) = S1(2)*S2(0) - S1(0)*S2(2) + S1(5)*S2(3) - S1(3)*S2(5);
+			result(2) = -S1(1)*S2(0) + S1(0)*S2(1) - S1(4)*S2(3) + S1(3)*S2(4);
+			result(3) = -S1(5)*S2(1) + S1(4)*S2(2);
+			result(4) = S1(5)*S2(0) - S1(3)*S2(2);
+			result(5) = -S1(4)*S2(0) + S1(3)*S2(1);
+			return result;
+		}
 	}
 }

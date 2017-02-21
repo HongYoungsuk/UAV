@@ -65,6 +65,12 @@ namespace irLib
 			static se3 ad(const se3& S1, const se3& S2);
 			static se3 adTranspose(const se3& S1, const se3& S2);
 
+			/*
+				functions added by Hongyoungsuk for UAV simulator
+			*/
+			static Matrix6 ado(const se3& S);
+			static se3 ado(const se3& S1, const se3& S2);
+
 		private:
 			SO3 _R;
 			Vector3 _p;

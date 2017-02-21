@@ -3,6 +3,7 @@
 #include <irMath\Function.h>
 #include <irMath\Constant.h>
 #include <irMath\GaussianQuadrature.h>
+#include <irMath\EulerIntegrator.h>
 #include <irMath\Interpolation.h>
 #include <irMath\NonlinearOptimization.h>
 #include <irUtils\Diagnostic.h>
@@ -16,9 +17,12 @@ namespace UAVTG
 		class PTPOptimization;
 		class SharedResource;
 
+		class SphereObstacleConstraint;
+
 		class PTPOptimization
 		{
 			friend class SharedResource;
+			friend class SphereObstacleConstraint;
 		public:
 			PTPOptimization(UAVTG::UAVDyn::UAVModel* UAV, const unsigned int orderOfBSpline = 5, const unsigned int numOfOptCP = 5, const unsigned int numOfSamples = 30);
 			~PTPOptimization();
@@ -34,6 +38,7 @@ namespace UAVTG
 			*/
 			void setInitialState(const irLib::irMath::MatrixX& initialState);
 			void setFinalState(const irLib::irMath::MatrixX& finalState);
+			void setSphereObstacleInequalityFun(const irLib::irMath::Vector3& center, const irLib::irMath::Real radius);
 
 			/*!
 				Make B-spline knots
@@ -94,6 +99,8 @@ namespace UAVTG
 				Objective and contraint functions
 			*/
 			irLib::irMath::FunctionPtr _objectiveFunc;
+			std::vector<irLib::irMath::FunctionPtr> _SphereObstacleConFunc;
+			irLib::irMath::FunctionPtr _InputIneqFunc;
 			irLib::irMath::FunctionPtr _IneqFunc;
 			
 			/*!
@@ -135,6 +142,12 @@ namespace UAVTG
 			irLib::irMath::VectorX _initialParams;
 			irLib::irMath::VectorX _finalParams;
 			unsigned int _dimOfParams;
+
+			/*!
+				
+			*/
+			std::vector<irLib::irMath::VectorX> _initialTrajectory;
+			std::vector<irLib::irMath::VectorX> _finalTrajectory;
 		};
 
 		class SharedResource
@@ -142,11 +155,12 @@ namespace UAVTG
 		public:
 			SharedResource(PTPOptimization* PTPOptimzer);
 			~SharedResource(){}
-
+			
+			void calculatedqdtf(const irLib::irMath::Real tf);
 			virtual void makeBSpline(const irLib::irMath::VectorX& params);
 			virtual void update(const irLib::irMath::VectorX& params) = 0;
-			const std::vector<irLib::irMath::VectorX>& gettau(const irLib::irMath::VectorX& params);
-			const std::vector<irLib::irMath::MatrixX>& getdtaudp(const irLib::irMath::VectorX& params);
+			const std::vector<irLib::irMath::VectorX>& getinput(const irLib::irMath::VectorX& params);
+			const std::vector<irLib::irMath::MatrixX>& getdinputdp(const irLib::irMath::VectorX& params);
 		public:
 			PTPOptimization* _PTPOptimizer;
 
@@ -173,7 +187,7 @@ namespace UAVTG
 			/*!
 				UAV motor torque
 			*/
-			std::vector<irLib::irMath::VectorX> _tau;
+			std::vector<irLib::irMath::VectorX> _input;
 			
 			/*!
 				Bspline
@@ -185,7 +199,7 @@ namespace UAVTG
 			/*!
 				Other variables
 			*/
-			std::vector<irLib::irMath::MatrixX> _dtaudp;
+			std::vector<irLib::irMath::MatrixX> _dinputdp;
 			std::vector<irLib::irMath::MatrixX> _dqdp;
 			std::vector<irLib::irMath::MatrixX> _dqdotdp;
 			std::vector<irLib::irMath::MatrixX> _dqddotdp;
@@ -201,6 +215,26 @@ namespace UAVTG
 		public:
 			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		};
+
+		class SphereObstacleConstraint : public irLib::irMath::Function
+		{
+		public:
+			SphereObstacleConstraint(PTPOptimization* optimizer, const irLib::irMath::Vector3& center, const irLib::irMath::Real radius)
+				: _optimizer(optimizer), _center(center), _radius(radius) {}
+			const irLib::irMath::Vector3& getCenter() const { return _center; }
+			const irLib::irMath::Real getRadius() const { return _radius; }
+
+			irLib::irMath::VectorX func(const irLib::irMath::VectorX& params) const;
+			irLib::irMath::MatrixX Jacobian(const irLib::irMath::VectorX& params) const;
+		public:
+			irLib::irMath::Vector3 _center;
+			irLib::irMath::Real _radius;
+			PTPOptimization* _optimizer;
+
+		public:
+			EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+		};
+
 	}
 
 	
