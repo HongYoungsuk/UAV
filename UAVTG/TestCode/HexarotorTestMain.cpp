@@ -17,7 +17,7 @@ int main()
 	unsigned int orderOfBSpline = 4;
 	unsigned int numOfOptCP = 6;
 	unsigned int numOfSamples = 100;
-	Real tf = 5.0;
+	Real tf = 3.5;
 	MatrixX initialState(6, 3), finalState(6, 3);
 	initialState.setZero(); finalState.setZero();
 	finalState(0, 0) = 3; // x coordinate
@@ -25,7 +25,8 @@ int main()
 	finalState(2, 0) = 5; // z coordinate
 	std::vector<Vector3> center;
 	std::vector<Real> radius;
-	center.push_back(Vector3(1.5, 1.5, 2.5)); radius.push_back(0.4);
+	//center.push_back(Vector3(3.0/2.0, 3.0 / 2.0, 5.0/2.01)); radius.push_back(0.5);
+	//center.push_back(Vector3(0.1, 0.1, 1)); radius.push_back(0.5);
 
 	// optimization
 	Hexarotor* uav = new Hexarotor();

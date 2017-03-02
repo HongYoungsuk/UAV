@@ -1,5 +1,6 @@
 #pragma once
 
+#include <time.h>
 #include <irMath\Function.h>
 #include <irMath\Constant.h>
 #include <irMath\GaussianQuadrature.h>
@@ -9,6 +10,8 @@
 #include <irUtils\Diagnostic.h>
 #include <UAVDyn\UAV.h>
 #include "SE3Parametrization.h"
+
+//#define USE_LIN_INIT
 
 namespace UAVTG
 {
@@ -74,6 +77,14 @@ namespace UAVTG
 				Generate joint trajectory through optimization process
 			*/
 			virtual void generateTrajectory();
+
+			/*
+				
+			*/
+			irLib::irMath::Real makeRandLU(irLib::irMath::Real lower, irLib::irMath::Real upper)
+			{
+				return lower + (upper - lower)*((double)rand() / 32767.0);
+			}
 		public:
 			/*
 				Nonlinear optimizer
@@ -195,6 +206,7 @@ namespace UAVTG
 			irLib::irMath::BSpline<-1, -1, -1> _qSpline;
 			irLib::irMath::BSpline<-1, -1, -1> _qdotSpline;
 			irLib::irMath::BSpline<-1, -1, -1> _qddotSpline;
+			irLib::irMath::BSpline<-1, -1, -1> _qdddotSpline;
 
 			/*!
 				Other variables

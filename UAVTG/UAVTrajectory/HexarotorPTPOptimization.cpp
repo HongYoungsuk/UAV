@@ -53,10 +53,14 @@ namespace UAVTG
 					if (!(_PTPOptimizer->_setTravelingTime)) // if final time(tf) is parameter
 					{
 						calculatedqdtf(_params(_params.size() - 1));
+
 						_ParamState[i]->_dqdp = _dqdp[i];
+
+
 						_ParamState[i]->_dqdotdp = _dqdotdp[i] / _PTPOptimizer->_tf;
 						_ParamState[i]->_dqdotdp.col(_PTPOptimizer->_dimOfParams - 1) = _ParamState[i]->_dqdotdp.col(_PTPOptimizer->_dimOfParams - 1) -
 							_qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) / _PTPOptimizer->_tf / _PTPOptimizer->_tf;
+
 						_ParamState[i]->_dqddotdp = _dqddotdp[i] / (_PTPOptimizer->_tf * _PTPOptimizer->_tf);
 						_ParamState[i]->_dqddotdp.col(_PTPOptimizer->_dimOfParams - 1) = _ParamState[i]->_dqddotdp.col(_PTPOptimizer->_dimOfParams - 1) -
 							2 * _qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) / (_PTPOptimizer->_tf * _PTPOptimizer->_tf * _PTPOptimizer->_tf);
@@ -91,6 +95,7 @@ namespace UAVTG
 				fval(0) += weight(i) * input[i].squaredNorm();
 			}
 			fval(0) *= _optimizer->_tf;
+			//cout << "fval : " << fval(0) << endl;
 			//fval(0) *= 0.5;
 			
 			//static int _i = 0;

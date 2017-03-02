@@ -98,22 +98,35 @@ namespace UAVTG
 		{
 			initParam.resize(_dimOfParams);
 			initParam.setZero();
+			
+			srand(time(NULL));
 			for (unsigned int i = 0; i < _SE3Params->getParamDof(); i++)
 			{
 				for (unsigned int j = 0; j < _numOfOptCP; j++)
 				{
+#ifdef USE_LIN_INIT
 					initParam(_numOfOptCP * i + j) = (_finalCP[2](i) - _initialCP[2](i)) / (_numOfOptCP + 1) * (j + 1) + _initialCP[2](i);
+#else
+					if (j == 0)
+						initParam(_numOfOptCP * i + j) = makeRandLU(_initialCP[2](i), (_finalCP[2](i) - _initialCP[2](i)) / (_numOfOptCP + 1) * (j + 1) + _initialCP[2](i));
+					else
+						initParam(_numOfOptCP * i + j) = makeRandLU(initParam(_numOfOptCP * i + j - 1), (_finalCP[2](i) - _initialCP[2](i)) / (_numOfOptCP + 1) * (j + 1) + _initialCP[2](i));
+					//if (j == 0)
+					//	initParam(_numOfOptCP * i + j) = makeRandLU(_initialCP[2](i), _finalCP[2](i));
+					//else
+					//	initParam(_numOfOptCP * i + j) = makeRandLU(initParam(_numOfOptCP * i + j - 1), _finalCP[2](i));
+#endif
 				}
 			}
 
 			//cout << "initParam size : " << initParam.size() << endl;
 			//cout << endl; cout << initParam << endl << endl;
 
-			initParam << 0.428571, 0.857143, 1.28571, 1.71429, 2.14286, 2.57143, 
-				0.428571, 0.857143, 1.28571, 1.71429, 2.14286, 2.57143,
-				//1.214286, 1.42857, 2.14286, 2.85714, 3.57143, 4.28571,
-				0.714286, 1.42857, 2.14286, 2.85714, 3.57143, 4.28571,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+			//initParam << 0.428571, 0.857143, 1.28571, 1.71429, 2.14286, 2.57143, 
+			//	0.428571, 0.857143, 1.28571, 1.71429, 2.14286, 2.57143,
+			//	//1.214286, 1.42857, 2.14286, 2.85714, 3.57143, 4.28571,
+			//	0.714286, 1.42857, 2.14286, 2.85714, 3.57143, 4.28571,
+			//	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
 			//cout << endl; cout << initParam << endl << endl;
 
@@ -158,10 +171,13 @@ namespace UAVTG
 			cout << "Initial objective function value : " << _objectiveFunc->func(initX) << endl << endl;
 
 			_optimizer.setObjectiveFunction(_objectiveFunc);
-			_optimizer.setInequalityConstraint(_IneqFunc);
+			//_optimizer.setInequalityConstraint(_IneqFunc);
+			//_optimizer.setInequalityConstraint(_SphereObstacleConFunc[0]);
 			LOG("Start optimization.");
 			_optimizer.solve(initX, VectorX(), VectorX());
 			LOG("Finish optimization.");
+
+			cout << "result params" << endl << _optimizer.resultX << endl << endl;
 
 			//////////////////////////////////////////////////////////
 			// Inequality constraint test
@@ -265,9 +281,9 @@ namespace UAVTG
 
 			for (unsigned int i = 0; i < _PTPOptimizer->_numOfSamples; i++)
 			{
-				_dqdp[i].col(_dqdp[i].cols() - 1) = qSpline(_PTPOptimizer->_integrator->GetPoints()[i]);
-				_dqdotdp[i].col(_dqdotdp[i].cols() - 1) = qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i]);
-				_dqddotdp[i].col(_dqddotdp[i].cols() - 1) = qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i]);
+				_dqdp[i].col(_dqdp[i].cols() - 1) = qSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - _qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i])/tf;
+				_dqdotdp[i].col(_dqdotdp[i].cols() - 1) = qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - _qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i]) / tf;
+				_dqddotdp[i].col(_dqddotdp[i].cols() - 1) = qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - _qdddotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i]) / tf;
 			}
 		}
 
@@ -297,6 +313,7 @@ namespace UAVTG
 			_qSpline = BSpline<-1, -1, -1>(_PTPOptimizer->_knots, _cp);
 			_qdotSpline = _qSpline.derivative();
 			_qddotSpline = _qdotSpline.derivative();
+			_qdddotSpline = _qddotSpline.derivative();
 		}
 
 		const std::vector<irLib::irMath::VectorX>& SharedResource::getinput(const irLib::irMath::VectorX & params)
@@ -345,8 +362,11 @@ namespace UAVTG
 
 			for (unsigned int i = 0; i < _optimizer->_numOfSamples; i++)
 			{
-				q = _optimizer->_shared->_qSpline(_optimizer->_integrator->GetPoints()[i]);
-				x = q(0); y = q(1); z = q(2);
+				//q = _optimizer->_shared->_qSpline(_optimizer->_integrator->GetPoints()[i]);
+				//x = q(0); y = q(1); z = q(2);
+				x = _optimizer->_shared->_ParamState[i]->_q(0);
+				y = _optimizer->_shared->_ParamState[i]->_q(1);
+				z = _optimizer->_shared->_ParamState[i]->_q(2);
 				jacobian.row(i) = -2 * (x - _center(0)) * _optimizer->_shared->_ParamState[i]->_dqdp.row(0)
 					- 2 * (y - _center(1)) * _optimizer->_shared->_ParamState[i]->_dqdp.row(1)
 					- 2 * (z - _center(2)) * _optimizer->_shared->_ParamState[i]->_dqdp.row(2);
