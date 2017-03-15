@@ -143,8 +143,8 @@ namespace UAVTG
 			calculateBoundaryCondition(_tf);
 			LOG("Complete making boundary conditions.");
 
-			//_integrator = new GaussianQuadrature(_numOfSamples, _si, _sf);
-			_integrator = new EulerIntegrator(_numOfSamples, _si, _sf);
+			_integrator = new GaussianQuadrature(_numOfSamples, _si, _sf);
+			//_integrator = new EulerIntegrator(_numOfSamples, _si, _sf);
 			LOG("Integrator ready.");
 
 			CreateSharedResource();
@@ -171,7 +171,7 @@ namespace UAVTG
 			cout << "Initial objective function value : " << _objectiveFunc->func(initX) << endl << endl;
 
 			_optimizer.setObjectiveFunction(_objectiveFunc);
-			//_optimizer.setInequalityConstraint(_IneqFunc);
+			_optimizer.setInequalityConstraint(_IneqFunc);
 			//_optimizer.setInequalityConstraint(_SphereObstacleConFunc[0]);
 			LOG("Start optimization.");
 			_optimizer.solve(initX, VectorX(), VectorX());

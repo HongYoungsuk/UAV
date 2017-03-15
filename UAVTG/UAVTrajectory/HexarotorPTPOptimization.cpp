@@ -132,64 +132,92 @@ namespace UAVTG
 		*/
 		irLib::irMath::VectorX HexarotorInputConstraint::func(const irLib::irMath::VectorX & params) const
 		{
+			//const vector<VectorX>& input = _optimizer->_shared->getinput(params);
+			//VectorX fval(_optimizer->_UAV->_dof * 2);
+			//Real upper, lower;
+
+			//for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
+			//{
+			//	// value initialization
+			//	fval(i) = -1.0;
+			//	fval(_optimizer->_UAV->_dof + i) = -1.0;
+
+			//	upper = RealMin;
+			//	lower = RealMax;
+			//	for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
+			//	{
+			//		if (upper < input[j](i))
+			//		{
+			//			upper = input[j](i);
+			//		}
+			//		if (lower > input[j](i))
+			//		{
+			//			lower = input[j](i);
+			//		}
+			//	}
+
+			//	fval(i) = upper - _optimizer->_UAV->_umax[i];
+			//	fval(_optimizer->_UAV->_dof + i) = lower * (-1) + _optimizer->_UAV->_umin[i];
+			//}
 			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
-			VectorX fval(_optimizer->_UAV->_dof * 2);
-			Real upper, lower;
+			VectorX fval(_optimizer->_UAV->_dof * 2 * _optimizer->_numOfSamples);
+			fval.setZero();
 
 			for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
 			{
-				// value initialization
-				fval(i) = -1.0;
-				fval(_optimizer->_UAV->_dof + i) = -1.0;
 
-				upper = RealMin;
-				lower = RealMax;
 				for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
 				{
-					if (upper < input[j](i))
-					{
-						upper = input[j](i);
-					}
-					if (lower > input[j](i))
-					{
-						lower = input[j](i);
-					}
+					fval(i*_optimizer->_numOfSamples + j) = input[j](i) - _optimizer->_UAV->_umax[i];
+					fval(_optimizer->_UAV->_dof * _optimizer->_numOfSamples + i*_optimizer->_numOfSamples + j) = _optimizer->_UAV->_umin[i] - input[j](i);
 				}
 
-				fval(i) = upper - _optimizer->_UAV->_umax[i];
-				fval(_optimizer->_UAV->_dof + i) = lower * (-1) + _optimizer->_UAV->_umin[i];
 			}
 			return fval;
 		}
 
 		irLib::irMath::MatrixX HexarotorInputConstraint::Jacobian(const irLib::irMath::VectorX & params) const
 		{
+			//const vector<VectorX>& input = _optimizer->_shared->getinput(params);
+			//const std::vector<MatrixX>& dinputdp = _optimizer->_shared->getdinputdp(params);
+			//MatrixX jacobian(_optimizer->_UAV->_dof * 2, params.size());
+			//Real upper, lower;
+			//unsigned int upperIdx, lowerIdx;
+
+			//for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
+			//{
+			//	upper = RealMin;
+			//	lower = RealMax;
+			//	for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
+			//	{
+			//		if (upper < input[j](i))
+			//		{
+			//			upper = input[j](i);
+			//			upperIdx = j;
+			//		}
+			//		if (lower > input[j](i))
+			//		{
+			//			lower = input[j](i);
+			//			lowerIdx = j;
+			//		}
+			//	}
+
+			//	jacobian.row(i) = dinputdp[upperIdx].row(i);
+			//	jacobian.row(_optimizer->_UAV->_dof + i) = -dinputdp[lowerIdx].row(i);
+			//}
+
 			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
 			const std::vector<MatrixX>& dinputdp = _optimizer->_shared->getdinputdp(params);
-			MatrixX jacobian(_optimizer->_UAV->_dof * 2, params.size());
-			Real upper, lower;
-			unsigned int upperIdx, lowerIdx;
-
+			MatrixX jacobian(_optimizer->_UAV->_dof * 2 * _optimizer->_numOfSamples, params.size());
+			
+			jacobian.setZero();
 			for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
 			{
-				upper = RealMin;
-				lower = RealMax;
 				for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
 				{
-					if (upper < input[j](i))
-					{
-						upper = input[j](i);
-						upperIdx = j;
-					}
-					if (lower > input[j](i))
-					{
-						lower = input[j](i);
-						lowerIdx = j;
-					}
+					jacobian.row(i*_optimizer->_numOfSamples + j) = dinputdp[j].row(i);
+					jacobian.row(_optimizer->_UAV->_dof * _optimizer->_numOfSamples + i*_optimizer->_numOfSamples + j) = -dinputdp[j].row(i);
 				}
-
-				jacobian.row(i) = dinputdp[upperIdx].row(i);
-				jacobian.row(_optimizer->_UAV->_dof + i) = -dinputdp[lowerIdx].row(i);
 			}
 			return jacobian;
 		}

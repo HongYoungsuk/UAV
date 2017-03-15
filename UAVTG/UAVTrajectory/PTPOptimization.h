@@ -11,7 +11,7 @@
 #include <UAVDyn\UAV.h>
 #include "SE3Parametrization.h"
 
-//#define USE_LIN_INIT
+#define USE_LIN_INIT
 
 namespace UAVTG
 {
