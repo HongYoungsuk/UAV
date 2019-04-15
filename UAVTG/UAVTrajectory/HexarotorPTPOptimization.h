@@ -2,6 +2,13 @@
 
 #include "PTPOptimization.h"
 
+#define USE_MAX_IN_INPUTCNT
+#define USE_ANALTIC_JACOBIAN
+
+static int cntForEvaluation = 0;
+static std::vector<irLib::irMath::Real> gFvals = std::vector<irLib::irMath::Real>();
+static std::vector<irLib::irMath::VectorX> gParams = std::vector<irLib::irMath::VectorX>();
+
 namespace UAVTG
 {
 	namespace UAVTrajectory
@@ -11,7 +18,7 @@ namespace UAVTG
 
 		class HexarotorInputObjective;
 		class HexarotorInputConstraint;
-
+			   		 
 		class HexarotorPTPOptimization : public PTPOptimization
 		{
 			friend class HexarotorSharedResource;
@@ -26,6 +33,14 @@ namespace UAVTG
 			virtual void makeIneqConstraintFunction();
 			virtual SharedResource* CreateSharedResource();
 			
+			//////////////////////////////////////////////////
+			//////////////////////////////////////////////////
+			void checkAllInequalityConstraint();
+			int _cntForEvaluation;
+			std::vector<irLib::irMath::Real> _fvals;
+			std::vector<irLib::irMath::VectorX> _params;
+			//////////////////////////////////////////////////
+			//////////////////////////////////////////////////
 		};
 
 		class HexarotorSharedResource : public SharedResource
@@ -42,7 +57,9 @@ namespace UAVTG
 		public:
 			HexarotorInputObjective(HexarotorPTPOptimization* optimizer) : _optimizer(optimizer) {}
 			irLib::irMath::VectorX func(const irLib::irMath::VectorX& params) const;
+#ifdef USE_ANALTIC_JACOBIAN
 			irLib::irMath::MatrixX Jacobian(const irLib::irMath::VectorX& params) const;
+#endif
 			HexarotorPTPOptimization* _optimizer;
 		};
 
@@ -51,7 +68,9 @@ namespace UAVTG
 		public:
 			HexarotorInputConstraint(HexarotorPTPOptimization* optimizer) : _optimizer(optimizer) {}
 			irLib::irMath::VectorX func(const irLib::irMath::VectorX& params) const;
+#ifdef USE_ANALTIC_JACOBIAN
 			irLib::irMath::MatrixX Jacobian(const irLib::irMath::VectorX& params) const;
+#endif
 			HexarotorPTPOptimization* _optimizer;
 		};
 

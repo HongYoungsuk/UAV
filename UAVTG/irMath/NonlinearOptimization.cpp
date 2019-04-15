@@ -90,7 +90,7 @@ namespace irLib
 
 			//optimizer.set_maxtime(1.5); // 원래는 없었음
 			//optimizer.set_maxtime(10);
-			optimizer.set_maxeval(500);
+			optimizer.set_maxeval(5000);
 			optimizer.set_xtol_rel(1e-4);
 			optimizer.set_ftol_rel(1e-4);
 

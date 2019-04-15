@@ -173,11 +173,11 @@ namespace UAVTG
 			_optimizer.setObjectiveFunction(_objectiveFunc);
 			_optimizer.setInequalityConstraint(_IneqFunc);
 			//_optimizer.setInequalityConstraint(_SphereObstacleConFunc[0]);
-			LOG("Start optimization.");
+			LOG("================== Start optimization. ======================");
 			_optimizer.solve(initX, VectorX(), VectorX());
-			LOG("Finish optimization.");
+			LOG("================== Finish optimization. =====================");
 
-			cout << "result params" << endl << _optimizer.resultX << endl << endl;
+			//cout << "result params" << endl << _optimizer.resultX << endl << endl;
 
 			//////////////////////////////////////////////////////////
 			// Inequality constraint test
@@ -196,7 +196,6 @@ namespace UAVTG
 				cout << "cnt : " << cnt << ", All inequality constraints are not satisfied." << endl;
 			//////////////////////////////////////////////////////////
 
-
 			//////////////////////////////////////////////////////////
 			// calculate final trajectory
 			_shared->makeBSpline(_optimizer.resultX);
@@ -209,7 +208,7 @@ namespace UAVTG
 
 			//cout << "optimization parameters" << endl << _optimizer.resultX << endl << endl;
 			cout << "Traveling time : " << _tf << endl;
-			cout << "Final objective function value : " << _objectiveFunc->func(_optimizer.resultX) << endl << endl;
+			cout << "Final objective function value : " << _objectiveFunc->func(_optimizer.resultX) << endl;
 		}
 
 
@@ -281,9 +280,12 @@ namespace UAVTG
 
 			for (unsigned int i = 0; i < _PTPOptimizer->_numOfSamples; i++)
 			{
-				_dqdp[i].col(_dqdp[i].cols() - 1) = qSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - _qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i])/tf;
-				_dqdotdp[i].col(_dqdotdp[i].cols() - 1) = qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - _qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i]) / tf;
-				_dqddotdp[i].col(_dqddotdp[i].cols() - 1) = qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - _qdddotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i]) / tf;
+				_dqdp[i].col(_dqdp[i].cols() - 1) = qSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - 
+					_qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i])/tf;
+				_dqdotdp[i].col(_dqdotdp[i].cols() - 1) = qdotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - 
+					_qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i]) / tf;
+				_dqddotdp[i].col(_dqddotdp[i].cols() - 1) = qddotSpline(_PTPOptimizer->_integrator->GetPoints()[i]) - 
+					_qdddotSpline(_PTPOptimizer->_integrator->GetPoints()[i])*(_PTPOptimizer->_integrator->GetPoints()[i]) / tf;
 			}
 		}
 

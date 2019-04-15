@@ -155,7 +155,7 @@ namespace UAVTG
 			unsigned int _dimOfParams;
 
 			/*!
-				
+				Trajectories
 			*/
 			std::vector<irLib::irMath::VectorX> _initialTrajectory;
 			std::vector<irLib::irMath::VectorX> _finalTrajectory;
@@ -212,7 +212,7 @@ namespace UAVTG
 				Other variables
 			*/
 			std::vector<irLib::irMath::MatrixX> _dinputdp;
-			std::vector<irLib::irMath::MatrixX> _dqdp;
+			std::vector<irLib::irMath::MatrixX> _dqdp;				///< this _dqdp means derivative of q_tilda r.w.t parameters
 			std::vector<irLib::irMath::MatrixX> _dqdotdp;
 			std::vector<irLib::irMath::MatrixX> _dqddotdp;
 

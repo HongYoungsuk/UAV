@@ -25,6 +25,29 @@ namespace UAVTG
 				static_pointer_cast<AugmentedFunction>(_IneqFunc)->addFunction(_SphereObstacleConFunc[i]);
 			//_IneqFunc = _SphereObstacleConFunc[0];
 		}
+
+		void HexarotorPTPOptimization::checkAllInequalityConstraint()
+		{
+			for (int i = 0; i < gParams.size(); i++)
+			{
+				unsigned int cnt = 0;
+				irLib::irMath::VectorX inequalFval = _IneqFunc->func(gParams[i]);
+				for (int j = 0; j < inequalFval.size(); j++)
+				{
+					if (inequalFval(j) > 0.0)
+						cnt++;
+				}
+
+				if (cnt == 0)
+					cout << i << "-th, All inequality constraints are satisfied." << endl;
+				else
+					cout << i << "-th, All inequality constraints are not satisfied." << endl;
+			}
+
+			_cntForEvaluation = cntForEvaluation;
+			_fvals = gFvals;
+			_params = gParams;
+		}
 		
 		SharedResource * HexarotorPTPOptimization::CreateSharedResource()
 		{
@@ -79,7 +102,7 @@ namespace UAVTG
 						_UAVState[i]->_dVdp, _UAVState[i]->_dVdotdp, _UAVState[i]->_Vp);
 				}
 			}
-		}
+		}		
 
 		/*!
 			Torque objective function class
@@ -92,17 +115,28 @@ namespace UAVTG
 			
 			for (unsigned int i = 0; i < _optimizer->_numOfSamples; i++)
 			{
+				//fval(0) += weight(i) * input[i].squaredNorm();
 				fval(0) += weight(i) * input[i].squaredNorm();
 			}
 			fval(0) *= _optimizer->_tf;
-			//cout << "fval : " << fval(0) << endl;
 			//fval(0) *= 0.5;
+			
+			////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////
+			//cout << cntForEvaluation << "-fval : " << fval(0) << endl;
+			cntForEvaluation++;
+			gFvals.push_back(fval(0));
+			gParams.push_back(params);
+			////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////
+			
 			
 			//static int _i = 0;
 			//cout << "i : " << _i++ << ", fval : " << fval(0) << endl;
 			return fval;
 		}
 
+#ifdef USE_ANALTIC_JACOBIAN
 		irLib::irMath::MatrixX HexarotorInputObjective::Jacobian(const irLib::irMath::VectorX & params) const
 		{
 			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
@@ -126,39 +160,42 @@ namespace UAVTG
 
 			return jacobian;
 		}
+#endif
 
 		/*!
 			Input constraint function class
 		*/
 		irLib::irMath::VectorX HexarotorInputConstraint::func(const irLib::irMath::VectorX & params) const
 		{
-			//const vector<VectorX>& input = _optimizer->_shared->getinput(params);
-			//VectorX fval(_optimizer->_UAV->_dof * 2);
-			//Real upper, lower;
+#ifdef USE_MAX_IN_INPUTCNT
+			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
+			VectorX fval(_optimizer->_UAV->_dof * 2);
+			Real upper, lower;
 
-			//for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
-			//{
-			//	// value initialization
-			//	fval(i) = -1.0;
-			//	fval(_optimizer->_UAV->_dof + i) = -1.0;
+			for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
+			{
+				// value initialization
+				fval(i) = -1.0;
+				fval(_optimizer->_UAV->_dof + i) = -1.0;
 
-			//	upper = RealMin;
-			//	lower = RealMax;
-			//	for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
-			//	{
-			//		if (upper < input[j](i))
-			//		{
-			//			upper = input[j](i);
-			//		}
-			//		if (lower > input[j](i))
-			//		{
-			//			lower = input[j](i);
-			//		}
-			//	}
+				upper = RealMin;
+				lower = RealMax;
+				for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
+				{
+					if (upper < input[j](i))
+					{
+						upper = input[j](i);
+					}
+					if (lower > input[j](i))
+					{
+						lower = input[j](i);
+					}
+				}
 
-			//	fval(i) = upper - _optimizer->_UAV->_umax[i];
-			//	fval(_optimizer->_UAV->_dof + i) = lower * (-1) + _optimizer->_UAV->_umin[i];
-			//}
+				fval(i) = upper - _optimizer->_UAV->_umax[i];
+				fval(_optimizer->_UAV->_dof + i) = lower * (-1) + _optimizer->_UAV->_umin[i];
+			}
+#else
 			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
 			VectorX fval(_optimizer->_UAV->_dof * 2 * _optimizer->_numOfSamples);
 			fval.setZero();
@@ -173,39 +210,42 @@ namespace UAVTG
 				}
 
 			}
+#endif
 			return fval;
 		}
 
+#ifdef USE_ANALTIC_JACOBIAN
 		irLib::irMath::MatrixX HexarotorInputConstraint::Jacobian(const irLib::irMath::VectorX & params) const
 		{
-			//const vector<VectorX>& input = _optimizer->_shared->getinput(params);
-			//const std::vector<MatrixX>& dinputdp = _optimizer->_shared->getdinputdp(params);
-			//MatrixX jacobian(_optimizer->_UAV->_dof * 2, params.size());
-			//Real upper, lower;
-			//unsigned int upperIdx, lowerIdx;
+#ifdef USE_MAX_IN_INPUTCNT
+			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
+			const std::vector<MatrixX>& dinputdp = _optimizer->_shared->getdinputdp(params);
+			MatrixX jacobian(_optimizer->_UAV->_dof * 2, params.size());
+			Real upper, lower;
+			unsigned int upperIdx, lowerIdx;
 
-			//for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
-			//{
-			//	upper = RealMin;
-			//	lower = RealMax;
-			//	for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
-			//	{
-			//		if (upper < input[j](i))
-			//		{
-			//			upper = input[j](i);
-			//			upperIdx = j;
-			//		}
-			//		if (lower > input[j](i))
-			//		{
-			//			lower = input[j](i);
-			//			lowerIdx = j;
-			//		}
-			//	}
+			for (unsigned int i = 0; i < _optimizer->_UAV->_dof; i++)
+			{
+				upper = RealMin;
+				lower = RealMax;
+				for (unsigned int j = 0; j < _optimizer->_numOfSamples; j++)
+				{
+					if (upper < input[j](i))
+					{
+						upper = input[j](i);
+						upperIdx = j;
+					}
+					if (lower > input[j](i))
+					{
+						lower = input[j](i);
+						lowerIdx = j;
+					}
+				}
 
-			//	jacobian.row(i) = dinputdp[upperIdx].row(i);
-			//	jacobian.row(_optimizer->_UAV->_dof + i) = -dinputdp[lowerIdx].row(i);
-			//}
-
+				jacobian.row(i) = dinputdp[upperIdx].row(i);
+				jacobian.row(_optimizer->_UAV->_dof + i) = -dinputdp[lowerIdx].row(i);
+			}
+#else
 			const vector<VectorX>& input = _optimizer->_shared->getinput(params);
 			const std::vector<MatrixX>& dinputdp = _optimizer->_shared->getdinputdp(params);
 			MatrixX jacobian(_optimizer->_UAV->_dof * 2 * _optimizer->_numOfSamples, params.size());
@@ -219,8 +259,10 @@ namespace UAVTG
 					jacobian.row(_optimizer->_UAV->_dof * _optimizer->_numOfSamples + i*_optimizer->_numOfSamples + j) = -dinputdp[j].row(i);
 				}
 			}
+#endif
 			return jacobian;
 		}
+#endif
 
 	}
 }

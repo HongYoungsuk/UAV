@@ -24,6 +24,9 @@
     <ClInclude Include="HexarotorPTPOptimization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WayPointOptimization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PTPOptimization.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HexarotorPTPOptimization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WayPointOptimization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

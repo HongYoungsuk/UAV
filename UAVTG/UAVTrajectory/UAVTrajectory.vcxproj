@@ -119,11 +119,13 @@
     <ClInclude Include="HexarotorPTPOptimization.h" />
     <ClInclude Include="PTPOptimization.h" />
     <ClInclude Include="SE3Parametrization.h" />
+    <ClInclude Include="WayPointOptimization.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HexarotorPTPOptimization.cpp" />
     <ClCompile Include="PTPOptimization.cpp" />
     <ClCompile Include="SE3Parametrization.cpp" />
+    <ClCompile Include="WayPointOptimization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\irDyn\irDyn.vcxproj">

@@ -82,5 +82,14 @@ namespace UAVTG
 		public:
 			
 		};
+		
+		class Quadrotor : public UAVModel
+		{
+		public:
+			Quadrotor();
+			~Quadrotor();
+		public:
+
+		};
 	}
 }
